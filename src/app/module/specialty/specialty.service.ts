@@ -13,6 +13,8 @@ const createSpecialty = async (payload: Specialty): Promise<Specialty> => {
 const getAllSpecialties = async (): Promise<Specialty[]> => {
 
     const specialties = await prisma.specialty.findMany();
+    console.log("service   ", specialties);
+    
     return specialties;
 }
 

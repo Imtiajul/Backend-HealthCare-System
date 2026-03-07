@@ -7,5 +7,6 @@
     "github.copilot.chat.anthropic.contextEditing.enabled": true,
     "github.copilot.chat.anthropic.tools.websearch.enabled": true,
     "github.copilot.chat.claudeAgent.allowDangerouslySkipPermissions": true,
-    "github.copilot.chat.codesearch.enabled": true
+    "github.copilot.chat.codesearch.enabled": true,
+    "prisma-smart-formatter.prisma.defaultFormatter": "Prisma.prisma"
 }
