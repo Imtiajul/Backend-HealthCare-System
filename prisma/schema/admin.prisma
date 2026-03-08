@@ -4,9 +4,9 @@ model Admin{
     email String
     profilePhoto String?
     contactNumber String?
-    isDeleted Boolean @default(false)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    isDeleted Boolean @default(false)
     deletedAt DateTime?
 
     userId String @unique

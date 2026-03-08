@@ -196,7 +196,7 @@ const softDeleteDoctor = async (id: string) => {
     where: { id },
     data: {
       isDeleted: true,
-      deleteAt: new Date(),
+      deletedAt: new Date(),
     }
   })
 }
