@@ -4,6 +4,7 @@ import { authRoutes } from "../module/auth/auth.routes";
 import { userRouter } from "../module/user/user.routes";
 import { doctorRouter } from "../module/doctor/doctor.routes";
 import { adminRouter } from "../module/admin/admin.routes";
+import { superAdminRouter } from "../module/superAdmin/superAdmin.routes";
 
 const routes = Router();
 
@@ -12,6 +13,7 @@ routes.use("/specialties", specialtyRouter);
 routes.use("/users", userRouter);
 routes.use("/doctors", doctorRouter);
 routes.use("/admins", adminRouter);
+routes.use("/super-admins", superAdminRouter);
 
 
 export const indexRoutes = routes;

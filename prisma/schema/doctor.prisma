@@ -1,5 +1,5 @@
 model Doctor {
-    id String @id @default(uuid(7))
+    id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
     name          String
     email         String    @unique
@@ -7,7 +7,7 @@ model Doctor {
     contactNumber String?
     address       String?
     isDeleted     Boolean   @default(false)
-    deletedAt      DateTime?
+    deletedAt     DateTime?
 
     registrationNumber  String @unique
     experience          Int    @default(0)
@@ -24,8 +24,14 @@ model Doctor {
     specialties DoctorSpecialty[]
 
     //relations
-    userId String @unique
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId          String            @unique
+    user            User              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    doctorSchedules DoctorSchedules[]
+
+    appointments   Appointment[]
+    reviews        Review[]
+    medicalReports MedicalReport[]
+    prescription Prescription[]
 
     @@map("doctor")
 }

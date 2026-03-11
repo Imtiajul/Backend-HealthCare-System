@@ -1,10 +1,12 @@
-export interface IUpdateDoctor {
+import { Gender } from "../../../generated/prisma/enums";
+
+export interface IUpdateDoctorPayload {
   name?: string;
   profilePhoto?: string;
   contactNumber?: string;
   registrationNumber?: string;
   experience?: number;
-  gender?: string;
+  gender?: Gender;
   appointmentFee?: number;
   qualification?: string;
   currentWorkingPlace?: string;

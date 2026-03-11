@@ -1,3 +1,4 @@
+import { UserStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma"
 import { IUpdateDoctorPayload } from "./doctor.Interface";
 
@@ -180,25 +181,46 @@ const updateDoctor = async (id: string, payload: IUpdateDoctorPayload) => {
 
 const softDeleteDoctor = async (id: string) => {
   // Check if doctor exists and not already deleted
-  const doctor = await prisma.doctor.findUnique({
+  const isDoctorExist = await prisma.doctor.findUnique({
     where: { id },
   });
 
-  if (!doctor) {
+  if (!isDoctorExist) {
     throw new Error("Doctor not found");
   }
 
-  if (doctor.isDeleted) {
+  if (isDoctorExist.isDeleted) {
     throw new Error("Doctor is already deleted");
   }
   // Mark doctor as deleted
-  return await prisma.doctor.update({
-    where: { id },
-    data: {
-      isDeleted: true,
-      deletedAt: new Date(),
-    }
+  await prisma.$transaction(async (tx) => {
+    await tx.doctor.update({
+      where: { id },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+      }
+    })
+
+    await tx.user.update({
+      where: {id: isDoctorExist.userId},
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+        status: UserStatus.DELETED,
+      }
+    })
+
+    await tx.session.deleteMany({
+      where: {userId: isDoctorExist.userId}
+    })
+
+    await tx.doctorSpecialty.deleteMany({
+      where: {doctorId: id}
+    })
   })
+
+  return {message: "Doctor deleted successfully"}
 }
 
 export const doctorService = {

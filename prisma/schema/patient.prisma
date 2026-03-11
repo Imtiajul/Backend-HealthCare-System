@@ -1,5 +1,6 @@
 model Patient {
-    id String @id @default(uuid(7))
+    // id String @id @default(uuid(7))
+    id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
     name          String
     email         String    @unique
@@ -12,9 +13,14 @@ model Patient {
     updatedAt     DateTime  @updatedAt
 
     //relations
-
     userId String @unique
     user   User   @relation(fields: [userId], references: [id])
+
+    patientHealthData PatientHealthData?
+    appointments      Appointment[]
+    reviews           Review[]
+    medicalReports    MedicalReport[]
+    prescriptions     Prescription[]
 
     @@index([email], name: "idx_patient_email")
     @@index([isDeleted], name: "idx_patient_isDeleted")

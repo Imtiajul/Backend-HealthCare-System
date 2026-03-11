@@ -10,7 +10,7 @@ const getAccessToken = (payload: JwtPayload) => {
     const accessToken = jwtUtils.createToken(
         payload,
         envVars.ACCESS_TOKEN_SECRET,
-        { expiresIn: envVars.ACCESS_TOKEN_EXPIRES_IN } as SignOptions
+        { expiresIn: Number(envVars.ACCESS_TOKEN_EXPIRES_IN) } as SignOptions
     );
 
     return accessToken;
@@ -20,13 +20,13 @@ const getRefreshToken = (payload: JwtPayload) => {
     const refreshToken = jwtUtils.createToken(
         payload,
         envVars.REFRESH_TOKEN_SECRET,
-        { expiresIn: envVars.REFRESH_TOKEN_EXPIRES_IN } as SignOptions
+        { expiresIn: Number(envVars.REFRESH_TOKEN_EXPIRES_IN) } as SignOptions
     );
     return refreshToken;
 }
 
 const setAccessTokenCookie = (res: Response, token: string) => {
-    cookieUtils.setCookie(res, 'accessToken', token, {
+       cookieUtils.setCookie(res, 'accessToken', token, {
         httpOnly: true,
         secure: true,
         sameSite: "none",
