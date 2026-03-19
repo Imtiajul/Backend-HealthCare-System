@@ -7,8 +7,15 @@ import status from "http-status";
 
 const createSpecialty = catchAsync(
     async (req: Request, res: Response) => {
-        const payload = req.body;
+        console.log(req.file);
+        const payload = {
+            ...req.body,
+            icon: req.file?.path,
+        }
+        console.log(payload);
+        
         const result = await specialtyService.createSpecialty(payload);
+
         sendResponse(res, {
             httpStatusCode: status.CREATED,
             success: true,
@@ -34,14 +41,14 @@ const getAllSpecialties = catchAsync(
 const deleteSpecialty = catchAsync(
     async (req: Request, res: Response) => {
         const { id } = req.params;
-       const result = await specialtyService.deleteSpecialty(id as string);
+        const result = await specialtyService.deleteSpecialty(id as string);
 
-       sendResponse(res, {
-        httpStatusCode: 200,
-        success: true,
-        message: "Specialties Deleted Successfully",
-        data: result
-       })
+        sendResponse(res, {
+            httpStatusCode: 200,
+            success: true,
+            message: "Specialties Deleted Successfully",
+            data: result
+        })
     }
 )
 

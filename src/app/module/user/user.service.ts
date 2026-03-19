@@ -36,7 +36,7 @@ const createDoctor = async (payload: ICreateDoctorPayload) => {
 
     const userData = await auth.api.signUpEmail({
         body: {
-            email: payload.doctor.email,
+            email: payload.doctor.email.toLowerCase(),
             password: payload.password,
             role: Role.DOCTOR,
             name: payload.doctor.name,
@@ -49,7 +49,8 @@ const createDoctor = async (payload: ICreateDoctorPayload) => {
             const doctorData = await tx.doctor.create({
                 data: {
                     userId: userData.user.id,
-                    ...payload.doctor
+                    ...payload.doctor,
+                    email: payload.doctor.email.toLowerCase(),
                 }
             })
 

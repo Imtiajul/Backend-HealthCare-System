@@ -7,6 +7,9 @@ import { bearer, emailOTP } from "better-auth/plugins";
 import { sendEmail } from "../utils/email";
 
 export const auth = betterAuth({
+    baseURL: envVars.BETTER_AUTH_URL,
+    secret: envVars.BETTER_AUTH_SECRET,
+    
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
@@ -18,6 +21,22 @@ export const auth = betterAuth({
         sendOnSignUp: true,
         sendOnSignIn: true,
         autoSignInAfterVerification: true,
+    },
+    socialProviders: {
+        google: {
+            clientId: envVars.GOOGLE_CLIENT_ID,
+            clientSecret: envVars.GOOGLE_CLIENT_SECRET,
+            mapProfileToUser: () => {
+                return {
+                    role: Role.PATIENT,
+                    status: UserStatus.ACTIVE,
+                    needPasswordChange: false,
+                    emailVerified: true,
+                    isDeleted: false,
+                    deleteAt: null,
+                }
+            },
+        }
     },
 
     user: {
@@ -53,39 +72,39 @@ export const auth = betterAuth({
         bearer(),
         emailOTP({
             overrideDefaultEmailVerification: true,
-                 async sendVerificationOTP({email, otp, type}) {
-                if(type === "email-verification"){
-                  const user = await prisma.user.findUnique({
-                    where : {
-                        email,
-                    }
-                  })
-                  
-                  if(user && !user.emailVerified){
-                    sendEmail({
-                        to : email,
-                        subject : "Verify your email",
-                        templateName : "otp",
-                        templateData :{
-                            name : user.name,
-                            otp,
-                        }
-                    })
-                  }
-                }else if(type === "forget-password"){
+            async sendVerificationOTP({ email, otp, type }) {
+                if (type === "email-verification") {
                     const user = await prisma.user.findUnique({
-                        where : {
+                        where: {
                             email,
                         }
                     })
 
-                    if(user){
+                    if (user && !user.emailVerified) {
                         sendEmail({
-                            to : email,
-                            subject : "Password Reset OTP",
-                            templateName : "otp",
-                            templateData :{
-                                name : user.name,
+                            to: email,
+                            subject: "Verify your email",
+                            templateName: "otp",
+                            templateData: {
+                                name: user.name,
+                                otp,
+                            }
+                        })
+                    }
+                } else if (type === "forget-password") {
+                    const user = await prisma.user.findUnique({
+                        where: {
+                            email,
+                        }
+                    })
+
+                    if (user) {
+                        sendEmail({
+                            to: email,
+                            subject: "Password Reset OTP",
+                            templateName: "otp",
+                            templateData: {
+                                name: user.name,
                                 otp,
                             }
                         })
@@ -96,6 +115,9 @@ export const auth = betterAuth({
             otpLength: 6
         })
     ],
+    redirectUrls: {
+        signIn: `${envVars.BETTER_AUTH_URL}/api/v1/auth/google/success`
+    },
     session: {
         expiresIn: Number(envVars.BETTER_AUTH_SESSION_TOKEN_EXPIRES_IN) / 1000, //second,
         upateAge: Number(envVars.BETTER_AUTH_SESSION_TOKEN_UPDATE_IN) / 1000, //second,
@@ -104,9 +126,28 @@ export const auth = betterAuth({
             maxAge: Number(envVars.BETTER_AUTH_SESSION_TOKEN_EXPIRES_IN) / 1000 //second
         }
 
+    },
+    trustedOrigins: [envVars.BETTER_AUTH_URL || "http://localhost:5000", envVars.FRONTEND_URL],
+    advanced: {
+        // disableCSRFCheck: true,
+        useSecureCookies: false,
+        cookies: {
+            state: {
+                attributes: {
+                    sameSite: "none",
+                    secure: true,
+                    httpOnly: true,
+                    path: "/",
+                }
+            },
+            sessionToken: {
+                attributes: {
+                    sameSite: "none",
+                    secure: true,
+                    httpOnly: true,
+                    path: "/",
+                }
+            }
+        }
     }
-    // trustedOrigins: [process.env.BETTER_AUTH_URL || "http://localhost:5000"],
-    // advanced: {
-    //     disableCSRFCheck: true,
-    // }
 });

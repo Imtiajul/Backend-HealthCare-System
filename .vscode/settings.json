@@ -1,5 +1,5 @@
 {
-    "prisma-smart-formatter.typescript.defaultFormatter": "vscode.typescript-language-features",
+    "prisma-smart-formatter.typescript.defaultFormatter": "esbenp.prettier-vscode",
     "prisma-smart-formatter.typescriptreact.defaultFormatter": "vscode.typescript-language-features",
     "github.copilot.chat.agent.autoFix": true,
     "github.copilot.chat.alternateGeminiModelFPrompt.enabled": true,

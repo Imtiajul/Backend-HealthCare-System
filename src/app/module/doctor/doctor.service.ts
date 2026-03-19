@@ -1,60 +1,100 @@
+import { Doctor, Prisma, Specialty } from "../../../generated/prisma/client";
 import { UserStatus } from "../../../generated/prisma/enums";
-import { prisma } from "../../lib/prisma"
+import { IQueryParams } from "../../interface/query.interface";
+import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import {
+  doctorFilterableFields,
+  doctorIncludeConfig,
+  doctorSearchableFields,
+} from "./doctor.constant";
 import { IUpdateDoctorPayload } from "./doctor.Interface";
 
-const getAllDoctor = async () => {
-  const result = await prisma.doctor.findMany({
-    where: {
-      isDeleted: false,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    // include: {
-    //     user: true,
-    //     specialties: {
-    //         include: {
-    //             specialty: true,
-    //         }
-    //     }
-    // },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      profilePhoto: true,
-      contactNumber: true,
-      registrationNumber: true,
-      experience: true,
-      gender: true,
-      appointmentFee: true,
-      qualification: true,
-      currentWorkingPlace: true,
-      designation: true,
-      averageRating: true,
-      createdAt: true,
-      updatedAt: true,
-      specialties: {
-        select: {
-          specialty: {
-            select: {
-              id: true,
-              title: true,
-            },
-          },
-        },
-      },
-    }
-  })
+const getAllDoctor = async (query: IQueryParams) => {
+  // const data = await prisma.doctor.findMany({
+  //   where: {
+  //     isDeleted: false,
+  //   },
+  //   orderBy: {
+  //     createdAt: "desc",
+  //   },
+  //   // include: {
+  //   //     // user: true,
+  //   //     specialties: {
+  //   //         include: {
+  //   //             specialty: true,
+  //   //         }
+  //   //     }
+  //   // },
+  //   select: {
+  //     id: true,
+  //     name: true,
+  //     email: true,
+  //     profilePhoto: true,
+  //     contactNumber: true,
+  //     registrationNumber: true,
+  //     experience: true,
+  //     gender: true,
+  //     appointmentFee: true,
+  //     qualification: true,
+  //     currentWorkingPlace: true,
+  //     designation: true,
+  //     averageRating: true,
+  //     createdAt: true,
+  //     updatedAt: true,
+  //     specialties: {
+  //       select: {
+  //         specialty: true
+  //         // {
+  //         //   select: {
+  //         //     id: true,
+  //         //     title: true,
+  //         //   },
+  //         // },
+  //       },
+  //     },
+  //   }
+  // })
 
   // Transform specialties (flatten structure)
-  const doctors = result.map((doctor) => ({
-    ...doctor,
-    specialties: doctor.specialties.map((s) => s.specialty),
-  }));
+  // const doctors = data.map((doctor) => ({
+  //   ...doctor,
+  //   specialties: doctor.specialties.map((s) => s.specialty),
+  // }));
 
-  return doctors;
-}
+  // return doctors;
+
+  const queryBuilder = new QueryBuilder<
+    Doctor,
+    Prisma.DoctorWhereInput,
+    Prisma.DoctorInclude
+  >(prisma.doctor, query, {
+    searchableFields: doctorSearchableFields,
+    filterableFields: doctorFilterableFields,
+  });
+
+  const result = await queryBuilder
+    .search()
+    .filter()
+    .where({
+      isDeleted: false,
+    })
+    .include({
+      user: true,
+      specialties: {
+        include: {
+          specialty: true,
+        },
+      },
+    })
+    .dynamicInclude(doctorIncludeConfig)
+    .paginate()
+    .sort()
+    .fields()
+    .execute();
+
+  return result;
+};
 
 const getDoctorById = async (id: string) => {
   const result = await prisma.doctor.findUnique({
@@ -96,7 +136,7 @@ const getDoctorById = async (id: string) => {
           },
         },
       },
-    }
+    },
   });
 
   if (!result) {
@@ -109,7 +149,7 @@ const getDoctorById = async (id: string) => {
   };
 
   return doctors;
-}
+};
 
 const updateDoctor = async (id: string, payload: IUpdateDoctorPayload) => {
   // Check if doctor exists and not deleted
@@ -199,33 +239,33 @@ const softDeleteDoctor = async (id: string) => {
       data: {
         isDeleted: true,
         deletedAt: new Date(),
-      }
-    })
+      },
+    });
 
     await tx.user.update({
-      where: {id: isDoctorExist.userId},
+      where: { id: isDoctorExist.userId },
       data: {
         isDeleted: true,
         deletedAt: new Date(),
         status: UserStatus.DELETED,
-      }
-    })
+      },
+    });
 
     await tx.session.deleteMany({
-      where: {userId: isDoctorExist.userId}
-    })
+      where: { userId: isDoctorExist.userId },
+    });
 
     await tx.doctorSpecialty.deleteMany({
-      where: {doctorId: id}
-    })
-  })
+      where: { doctorId: id },
+    });
+  });
 
-  return {message: "Doctor deleted successfully"}
-}
+  return { message: "Doctor deleted successfully" };
+};
 
 export const doctorService = {
   getAllDoctor,
   getDoctorById,
   updateDoctor,
-  softDeleteDoctor
-}
+  softDeleteDoctor,
+};
